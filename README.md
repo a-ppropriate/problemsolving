@@ -14,18 +14,21 @@ All in all the goal is to create a website, that:
 ### Draft
 #### Structure
 
-/index.html - site index
+##### Site
 
-/leet.py - a script to automatise work with jsons
-
-/assets/ - a place to store css/js needed for site functioning
-
-
-/problems/ - a place to store solutions
+/problems/ - a place to store solutions 
 
 /problems/leetcode/ - leetcode solutions
 
-/problems/leetcode/{id}/ - a place to store solution files
+/problems/leetcode/{id}/ - a place to store solution files, {id} being problem id
+
+/assets/ - a place to store css/js needed for site functioning
+
+##### Misc
+
+/leet.py - a CLI script to automatise work with jsons
+
+/bookmarklets/ - a place to store bookmarklets for scraping
 
 ##### Issues
 - Looks like there is no easy way to scrap leetcode task descriptions without piling up the dependencies. I'll use js bookmarklets to scrap the needed ones + insert from clipboard.
