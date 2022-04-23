@@ -9,7 +9,7 @@ All in all the goal is to create a website, that:
 
 ### Current key feature decisions (a subject to change):
 - Use vue for client side, use JSON for storing data.
-- Create a python CLI script to automate the work with files & creating JSONs.
+- Create a python CLI script to automate the work with files & constructing JSONs.
 
 ### Draft
 #### Structure
@@ -26,3 +26,7 @@ All in all the goal is to create a website, that:
 /problems/leetcode/ - leetcode solutions
 
 /problems/leetcode/{id}/ - a place to store solution files
+
+##### Issues
+- Looks like there is no easy way to scrap leetcode task descriptions without piling up the dependencies. I'll use js bookmarklets to scrap the needed ones + insert from clipboard.
+- The bookmarklet "convert-images-to-data-uri" feature took too much time to implement since simple canvas solution didn't work due to canvas tainting.
