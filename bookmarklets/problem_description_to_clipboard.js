@@ -47,8 +47,19 @@
 	};
 	Promise.allSettled(promises).then( 
 		v=>{
-			navigator.clipboard.writeText(question_div.innerHTML);
-			alert('Problem description saved to clipboard')
+			let res = {};
+			let title_div = document.querySelector('[data-cy*="question-title"]');
+			let diff_div = document.querySelector('[data-cy*="description"] div[diff]');
+			let diff = diff_div.textContent;
+			let title = title_div.textContent;
+			
+			res['id'] = title.split('.')[0];
+			res['title'] = title;
+			res['difficulty'] = diff;
+			res['description'] = question_div.innerHTML;
+			
+			navigator.clipboard.writeText(JSON.stringify(res));
+			alert('Problem data saved to clipboard');
 		}
 	);
 })()
