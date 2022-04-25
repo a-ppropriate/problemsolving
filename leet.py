@@ -1,11 +1,18 @@
 import sys
+import shutil
 import pyperclip
 import argparse
 import os
 import json
 
-BASE_PATH ='./problems/leetcode/' 
-PROBLEM_FILENAME = 'problem.json' #TODO(?): move constants to a separate file to be used by both this and js script
+#TODO: replace all the sys.exits with appropriate returns / error raises
+
+BASE_PATH ='./problems/leetcode/' #TODO(?): move constants to a separate file to be used by both this and js script
+PROBLEM_FILENAME = 'problem.json' 
+COMMENT_FILENAME = 'comment'
+SOLUTION_FILENAME = 'solution'
+INDEX_FILENAME = 'index.json'
+SUPPORTED_LANGS = ['js','py']
 
 
 def yes_or_no(question, default = 'yes'):
@@ -44,8 +51,8 @@ help_descriptions = {
 	},
 	'comment': {
 		'_cmd_': 'Write/rewrite comment for the existing problem or the problem solution',
-		'lang': 'Lang shorthand; global = comment to the task ',
-		'text': 'Write/rewrite comment for the existing problem solution. Leave empty to see current.',
+		'lang': 'Lang shorthand; global = comment on problem',
+		'text': 'Comment text',
 	},
 	
 	'delete': {
@@ -76,17 +83,17 @@ def problem_add (pid = None, title = None):
 		pass
 	
 	if (data != None and yes_or_no('Clipboard seems to contain a valid JSON, use it for problem creation?','yes')):
-		if (pid == None or (pid != data['id'] and yes_or_no('JSON contains an id different from the provided one, use id from JSON?','yes'))):
-			pid = data['id']
+		if (pid == None or (pid != data.get('id') and yes_or_no('JSON contains an id different from the provided one, use id from JSON?','yes'))):
+			pid = data.get('id')
 
-		title = data['title']
-		description = data['description']
-		difficulty = data['difficulty']
-	else:
-		if (pid == None):
-			sys.exit('No id given')
-		if (title == None):
-			sys.exit('No title given')
+		title = data.get('title')
+		description = data.get('description')
+		difficulty = data.get('difficulty')
+	
+	if (pid == None):
+		sys.exit('No id given')
+	if (title == None):
+		sys.exit('No title given')
 	
 	output_dict = {
 		'id': pid,
@@ -111,25 +118,135 @@ def problem_add (pid = None, title = None):
 
 
 	try:
-		file = open(path_to_file,'w');
-		json.dump(output_dict,file);
-		file.close();
+		with open(path_to_file,'w') as f:
+			json.dump(output_dict,f)
 	except:
 		sys.exit('Unable to create/write file')
+	
+	reindex()
+	sys.exit('Problem created')
+	
+
+def problem_delete (pid = None):
+	"""
+		Deletes problem folder
+	"""
+	if (pid == None):
+		sys.exit('No id given')
+	
+	path_to_problem = BASE_PATH + pid
+	if (yes_or_no('Do you really want to remove problem with id ' + pid + ' and all its solutions?','no')):
+		try:
+			shutil.rmtree(path_to_problem,ignore_errors=True)
+		except:
+			sys.exit('Unable to delete problem')
 		
-	print('Problem created');
+		reindex()
+		sys.exit('Problem deleted')
+	else:
+		sys.exit('You chose to leave the problem be')
 	
-
-def problem_delete ():
-	pass
-
-def problem_comment ():
-	pass
+def problem_comment (pid = None, text = None, lang = 'global'):
+	"""
+		Adds a `global` comment to problem or specific solution for `lang` 
+	"""
+	filename = COMMENT_FILENAME;
+	if (pid == None):
+		sys.exit('No id given')
 	
+	if (text == None):
+		sys.exit('No text given')
+	
+	if (lang != 'global'):
+		filename = lang + '_' + filename
+	
+	path_to_problem = BASE_PATH + pid + '/'
+	path_to_file = path_to_problem + filename
+	
+	if (not os.path.exists(path_to_problem)):
+		sys.exit('Problem folder not found')
+	elif (os.path.exists(path_to_file)):
+		if (not yes_or_no('The comment you are trying to set already exists, overwrite?','no')):
+			sys.exit('You chose to keep the old comment')
+	
+	with open(path_to_file,'w') as f:
+		f.write(text)
+	
+	reindex()
+	sys.exit('Comment created')
+	
+def reindex ():
+	"""
+		Write/rewrite an index file that contains the data on problems and solutions within BASE_PATH
+		Currently "index file" is more of a full data rather than index (probably a subject to change in the future)
+	"""
+	index_path = BASE_PATH + INDEX_FILENAME
+	index = {}
+	
+	for dir in os.listdir(BASE_PATH):
+		dir_path = BASE_PATH + dir + '/'
+		problem_file = dir_path + PROBLEM_FILENAME
+		problem_comment_file = dir_path + COMMENT_FILENAME
+		problem_comment = None
+		
+		if (not os.path.exists(problem_file)):
+			continue
+			
+		try:
+			with open(problem_file,'r') as f:
+				problem_data = json.load(f)
+		except:
+			continue
+		
+		if os.path.exists(problem_comment_file):
+			try:
+				with open(problem_comment_file,'r') as f:
+					problem_comment = f.read()
+			except:
+				pass
+				
+		solutions = {}
+		for lang in SUPPORTED_LANGS:
+			solution_text = None
+			solution_comment = None
+			solution_path = dir_path + SOLUTION_FILENAME + '.' + lang
+			solution_comment_path = dir_path + lang + '_' + COMMENT_FILENAME
+			
+			if os.path.exists(solution_path):
+				try:
+					with open(solution_path,'r') as f:
+						solution_text = f.read()
+				except:
+					pass
+			
+			if (solution_text == None):
+				continue
+			
+			if os.path.exists(solution_comment_path):
+				try:
+					with open(solution_comment_path,'r') as f:
+						solution_comment = f.read()
+				except:
+					pass
+			
+			solutions[lang] = {'solution':solution_text, 'comment':solution_comment}
+		
+		index[dir] = {'problem': problem_data, 'comment':problem_comment,'solutions': solutions}
+	
+	try:
+		with open(index_path,'w') as f:
+			#json.dump(index,f)
+			json.dump(index,f,indent=4, sort_keys=True)
+			
+			return True
+	except:
+		return False
+
 command_mapping = { #TODO(?):find a prettier way to do it
 	'add':problem_add,
 	'delete':problem_delete,
 	'comment':problem_comment,
+	'reindex':reindex
 }
 
 def main():
@@ -150,11 +267,8 @@ def main():
 
 	parser_comment = subparsers.add_parser('comment', help=help_descriptions['comment']['_cmd_'])
 	parser_comment.add_argument('pid', help = help_descriptions['pid'])
-	parser_comment.add_argument('lang', choices=['global','js','py'],help = help_descriptions['comment']['lang'],type=ascii)
-	parser_comment.add_argument('text', help = help_descriptions['comment']['text'],type=ascii)
-
-	parser_description = subparsers.add_parser('description', help=help_descriptions['description'])
-	parser_description.add_argument('pid', help = help_descriptions['pid'])
+	parser_comment.add_argument('lang', choices=SUPPORTED_LANGS + ['global'],help = help_descriptions['comment']['lang'])
+	parser_comment.add_argument('text', help = help_descriptions['comment']['text'])
 
 	parser_reindex = subparsers.add_parser('reindex', help=help_descriptions['reindex']['_cmd_'])
 	
@@ -162,21 +276,7 @@ def main():
 	args = vars(parser.parse_args())
 	command = args.pop('command');
 	
-	#print (args)
 	command_mapping[command](**args)
-	
-	#try:
-	#	command_mapping[command](args)
-	#except:
-	#	print ('Something went wrong')
-	#	exit(1);
-	
-	#print (command)
-	
-
-#try:
-#	command_mapping[args[0]]()
-#	break;
 
 if __name__ == "__main__":
 	main()
