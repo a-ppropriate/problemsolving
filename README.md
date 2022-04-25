@@ -34,4 +34,4 @@ All in all the goal is to create a website, that:
 - Looks like there is no easy way to scrap leetcode task descriptions without piling up the dependencies. I'll use js bookmarklets to scrap the needed ones + insert from clipboard.
 - The bookmarklet "convert-images-to-data-uri" feature took too much time to implement since simple canvas solution didn't work due to canvas tainting.
 - Python does not seem to have a convenient/pretty way to store a dict of functions, the workarounds seem to be not pretty enouh too, so the simplest way it is (for now at least).
-- Tkinter has proven to be useless, switched to pyperclip
+- Tkinter has proven to be not quite fitting for the task, switched to pyperclip
