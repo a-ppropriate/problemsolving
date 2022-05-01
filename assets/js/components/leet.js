@@ -72,11 +72,12 @@ Vue.component('leet',{ // TODO(?): move problem & solution to separate component
 				selected_lang:null,
 				filter:'',
 				difficulties:Object.values(instance.problems_data).reduce(function(acc,cur,index,arr){
-					if (acc[cur.problem.difficulty]){
-						if (Object.keys(cur.solutions).length)
+					if (Object.keys(cur.solutions).length) {
+						if (acc[cur.problem.difficulty]){
 							acc[cur.problem.difficulty].counter++
-					} else {
-						acc[cur.problem.difficulty] = {in_filter:false,counter:1} /*? add smth else ?*/
+						} else {
+							acc[cur.problem.difficulty] = {in_filter:false,counter:1} /*? add smth else ?*/
+						}
 					}
 					
 					return acc;
@@ -115,8 +116,6 @@ Vue.component('leet',{ // TODO(?): move problem & solution to separate component
 		},
 		computed:{
 			highlighted_solution_html:function(){
-				//return hljs.highlightAuto(this.selected_item.solutions[this.selected_lang]['solution'])
-				
 				if (this.selected_item?.solutions[this.selected_lang]?.solution){
 					return hljs.highlight(this.selected_item?.solutions[this.selected_lang]?.solution, {language: HLJS_ALIASES[this.selected_lang]}).value;
 				} else {
