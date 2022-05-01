@@ -12,7 +12,7 @@ PROBLEM_FILENAME = 'problem.json'
 COMMENT_FILENAME = 'comment'
 SOLUTION_FILENAME = 'solution'
 INDEX_FILENAME = 'index.json'
-SUPPORTED_LANGS = ['js','py']
+SUPPORTED_LANGS = ['js','py3']
 
 
 def yes_or_no(question, default = 'yes'):
@@ -48,6 +48,10 @@ help_descriptions = {
 		'_cmd_': 'Add problem',
 		'description': 'Problem description',
 		'title': 'Problem title'
+	},
+	'solution': {
+		'_cmd_': 'Add solution',
+		'lang': 'Lang shorthand'
 	},
 	'comment': {
 		'_cmd_': 'Write/rewrite comment for the existing problem or the problem solution',
@@ -124,8 +128,38 @@ def problem_add (pid = None, title = None):
 		sys.exit('Unable to create/write file')
 	
 	reindex()
-	sys.exit('Problem created')
+	sys.exit('Problem created, id:' + pid)
+
+def solution_add (pid = None, lang = None):
+	"""
+		Adds solution of `lang` to an existing problem with id = `pid` using text from clipboard
+	"""
+	data = pyperclip.paste().replace("\r", "") # win has some issues with writing "\r\n" to file
+	data = data.strip("\r\n\t")
 	
+	if (pid == None):
+		sys.exit('No id given')
+	if (lang == None):
+		sys.exit('No lang given')
+	
+	path_to_problem = BASE_PATH + pid + '/'
+	path_to_file = path_to_problem + SOLUTION_FILENAME + '.' + lang
+	
+	if (not os.path.exists(path_to_problem)):
+		sys.exit('The chosen problem does not exist')
+	
+	if (os.path.exists(path_to_file)):
+		if(not yes_or_no('There already is a solution for selected lang, rewrite it?','yes')):
+			sys.exit('You chose to not rewrite the solution data')
+		
+	try:
+		with open(path_to_file,'w') as f:
+			f.write(data)
+	except:
+		sys.exit('Unable to create/write file')
+	
+	reindex()
+	sys.exit('Solution created')
 
 def problem_delete (pid = None):
 	"""
@@ -246,6 +280,7 @@ command_mapping = { #TODO(?):find a prettier way to do it
 	'add':problem_add,
 	'delete':problem_delete,
 	'comment':problem_comment,
+	'solution':solution_add,
 	'reindex':reindex
 }
 
@@ -257,10 +292,14 @@ def main():
 	parser = argparse.ArgumentParser(description = 'A script for managing problems from leetcode')
 	command = None
 
-	subparsers = parser.add_subparsers(help='sub-command help',dest='command')
+	subparsers = parser.add_subparsers(help='sub-command help',dest='command') # TODO(?): organise it better
 	parser_create = subparsers.add_parser('add', help=help_descriptions['add']['_cmd_'])
 	parser_create.add_argument('pid', help = help_descriptions['pid'],nargs='?')
 	parser_create.add_argument('title', help = help_descriptions['add']['title'],nargs='?')
+	
+	parser_solution = subparsers.add_parser('solution', help=help_descriptions['solution']['_cmd_'])
+	parser_solution.add_argument('pid', help = help_descriptions['pid'],nargs='?')
+	parser_solution.add_argument('lang', choices=SUPPORTED_LANGS,help = help_descriptions['solution']['lang'])
 
 	parser_delete = subparsers.add_parser('delete', help=help_descriptions['delete']['_cmd_'])
 	parser_delete.add_argument('pid', help = help_descriptions['pid'])
