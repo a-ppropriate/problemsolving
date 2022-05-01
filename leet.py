@@ -269,7 +269,6 @@ def reindex ():
 	
 	try:
 		with open(index_path,'w') as f:
-			#json.dump(index,f)
 			json.dump(index,f,indent=4, sort_keys=True)
 			
 			return True
@@ -310,7 +309,6 @@ def main():
 	parser_comment.add_argument('text', help = help_descriptions['comment']['text'])
 
 	parser_reindex = subparsers.add_parser('reindex', help=help_descriptions['reindex']['_cmd_'])
-	
 	
 	args = vars(parser.parse_args())
 	command = args.pop('command');

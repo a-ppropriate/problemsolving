@@ -1,7 +1,5 @@
 import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.5.1/build/es/highlight.min.js'; // TODO: import the needed languages only
 
-
-
 const HLJS_ALIASES = {'js':'js','py3':'python'};
 
 Vue.component('leet',{ // TODO(?): move problem & solution to separate components. TBH there is no real need in "leet" being a separate component for now.
