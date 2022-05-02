@@ -190,5 +190,8 @@ ul.difficulty_filters > li {
 }
 
 .solution code {
-	white-space:pre-wrap;
+	white-space:pre;
+	
+	font-size: 12px;
+    line-height: 20px;
 }
