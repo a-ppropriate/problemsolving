@@ -191,7 +191,42 @@ ul.difficulty_filters > li {
 
 .solution code {
 	white-space:pre;
-	
 	font-size: 12px;
     line-height: 20px;
+}
+.solution .code_with_lines {
+	display:flex;
+}
+
+ul.lines {
+	user-select:none;
+	counter-reset:lines;
+	margin:0;
+	padding:0;
+	flex-grow:0;
+	flex-shrink:0;
+	font-size:12px;
+	line-height:20px;
+	min-width:3em;
+	list-style:none;
+	text-align:right;
+}
+ul.lines li{
+	padding:0;
+	margin:0;
+	display:block;
+	padding: 0 5px;
+	color:#6e7781;
+	height:20px;
+	overflow:hidden;
+	background:rgba(250,128,114,0.03);
+}
+ul.lines li::before {
+	counter-increment:lines;
+	content: counter(lines);
+	font-family:monospace;
+	
+}
+ul.lines + code {
+	padding-left:4px;
 }
